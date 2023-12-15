@@ -166,7 +166,7 @@ function _normalize_mpotypes(data::AbstractArray{<:Any,3})
             if numin(x) == numout(x) == 2
                 push!(tensortypes, typeof(x))
             elseif numin(x) == numout(x) == 1
-                push!(tensortypes, tensormaptype(spacetype(x), 2, 2, scalartype(x)))
+                push!(tensortypes, typeof(add_util_leg(x)))
             else
                 throw(ArgumentError("$(typeof(x)) is not an MPO tensor or a single-site tensor"))
             end
@@ -177,7 +177,7 @@ function _normalize_mpotypes(data::AbstractArray{<:Any,3})
                 throw(ArgumentError("data should only contain mpo tensors or scalars"))
         end
     end
-    T = promote_type(tensortypes...)
+    @show T = Union{tensortypes...}
     E = promote_type(scalartype(T), scalartypes...)
 
     # convert data
