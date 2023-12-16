@@ -15,13 +15,22 @@ apply a transfer matrix to the left.
  └─Ā─
 ```
 """
+function transfer_left(v::AbstractTensorMap{S,1,N₁}, A::GenericMPSTensor{S,N₂},
+                       Ā::GenericMPSTensor{S,N₂}) where {S,N₁,N₂}
+    return transfer_left(v, A, Ā, Defaults.get_backend(), Defaults.get_allocator())
+end
 @generated function transfer_left(v::AbstractTensorMap{S,1,N₁}, A::GenericMPSTensor{S,N₂},
-                                  Ā::GenericMPSTensor{S,N₂}) where {S,N₁,N₂}
+                                  Ā::GenericMPSTensor{S,N₂},
+                                  ::Backend, ::Alloc) where {Backend,Alloc,S,N₁,N₂}
     t_out = tensorexpr(:v, -1, -(2:(N₁ + 1)))
     t_top = tensorexpr(:A, 2:(N₂ + 1), -(N₁ + 1))
     t_bot = tensorexpr(:Ā, (1, (3:(N₂ + 1))...), -1)
     t_in = tensorexpr(:v, 1, (-(2:N₁)..., 2))
-    return :(return @plansor $t_out := $t_in * $t_top * conj($t_bot))
+    ex = :(@plansor $t_out := $t_in * $t_top * conj($t_bot))
+    Backend <: TensorOperations.Backend && insert!(ex.args, 3, :(backend = $(backendsymbol(Backend))))
+    Alloc <: TensorOperations.Backend && insert!(ex.args, 3, :(allocator = $(backendsymbol(Alloc))))
+
+    return :(return @no_escape $ex)
 end
 
 """
@@ -35,13 +44,23 @@ apply a transfer matrix to the right.
 ─Ā─┘
 ```
 """
+# function transfer_right(v::AbstractTensorMap{S,1,N₁}, A::GenericMPSTensor{S,N₂},
+#                         Ā::GenericMPSTensor{S,N₂}) where {S,N₁,N₂}
+#     return transfer_right(v, A, Ā, Defaults.get_backend(), Defaults.get_allocator())
+# end
 @generated function transfer_right(v::AbstractTensorMap{S,1,N₁}, A::GenericMPSTensor{S,N₂},
-                                   Ā::GenericMPSTensor{S,N₂}) where {S,N₁,N₂}
+                                   Ā::GenericMPSTensor{S,N₂}, ::Backend=Defaults.get_backend(),
+                                   ::Alloc=Defaults.get_allocator()) where {Backend,Alloc,S,N₁,N₂}
     t_out = tensorexpr(:v, -1, -(2:(N₁ + 1)))
     t_top = tensorexpr(:A, (-1, reverse(3:(N₂ + 1))...), 1)
     t_bot = tensorexpr(:Ā, (-(N₁ + 1), reverse(3:(N₂ + 1))...), 2)
     t_in = tensorexpr(:v, 1, (-(2:N₁)..., 2))
-    return :(return @plansor $t_out := $t_top * conj($t_bot) * $t_in)
+    ex = :(@plansor $t_out := $t_top * conj($t_bot) * $t_in)
+    Backend <: TensorOperations.Backend &&
+        insert!(ex.args, 3, :(backend = $(backendsymbol(Backend))))
+    Alloc <: TensorOperations.Backend &&
+        insert!(ex.args, 3, :(allocator = $(backendsymbol(Alloc))))
+    return :(return @no_escape $ex)
 end
 
 #transfer, but the upper A is an excited tensor
@@ -102,15 +121,26 @@ transfer_left(x, ::Nothing, A, Ā) = transfer_left(x, A, Ā)
 transfer_right(x, ::Nothing, A, Ā) = transfer_right(x, A, Ā)
 
 # mpo transfer
-function transfer_left(x::AbstractMPSTensor, O::AbstractMPOTensor,
-                       A::MPSTensor, Ā::MPSTensor)
-    @plansor y[-1 -2; -3] := x[1 2; 4] * A[4 5; -3] * O[2 3; 5 -2] * conj(Ā[1 3; -1])
-    return y
+@generated function transfer_left(x::AbstractMPSTensor, O::AbstractMPOTensor,
+                       A::MPSTensor, Ā::MPSTensor, ::Backend=Defaults.get_backend(),
+                                   ::Alloc=Defaults.get_allocator()) where {Backend,Alloc}
+    ex = :(@plansor y[-1 -2; -3] := x[1 2; 4] * A[4 5; -3] * O[2 3; 5 -2] * conj(Ā[1 3; -1]))
+    Backend <: TensorOperations.Backend &&
+        insert!(ex.args, 3, :(backend = $(backendsymbol(Backend))))
+    Alloc <: TensorOperations.Backend &&
+        insert!(ex.args, 3, :(allocator = $(backendsymbol(Alloc))))
+
+    return :(return @no_escape $ex)
 end
-function transfer_right(x::AbstractMPSTensor, O::AbstractMPOTensor,
-                        A::MPSTensor, Ā::MPSTensor)
-    @plansor y[-1 -2; -3] := A[-1 2; 1] * O[-2 4; 2 3] * conj(Ā[-3 4; 5]) * x[1 3; 5]
-    return y
+@generated function transfer_right(x::AbstractMPSTensor, O::AbstractMPOTensor,
+                        A::MPSTensor, Ā::MPSTensor, ::Backend=Defaults.get_backend(),
+                                   ::Alloc=Defaults.get_allocator()) where {Backend,Alloc}
+    ex = :(@plansor y[-1 -2; -3] := A[-1 2; 1] * O[-2 4; 2 3] * conj(Ā[-3 4; 5]) * x[1 3; 5])
+    Backend <: TensorOperations.Backend &&
+        insert!(ex.args, 3, :(backend = $(backendsymbol(Backend))))
+    Alloc <: TensorOperations.Backend &&
+        insert!(ex.args, 3, :(allocator = $(backendsymbol(Alloc))))
+    return :(return @no_escape $ex)
 end
 
 # mpo transfer, but with A an excitation-tensor
