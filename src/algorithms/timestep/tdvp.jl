@@ -63,27 +63,29 @@ function timestep(Ψ::InfiniteMPS, H, dt::Number, alg::TDVP, envs::Cache=environ
     return nstate, envs
 end
 
-function timestep!(Ψ::AbstractFiniteMPS, H, dt::Number, alg::TDVP, envs=environments(Ψ, H))
+function timestep!(Ψ::AbstractFiniteMPS, H, t, dt::Number, alg::TDVP, envs=environments(Ψ, H))
     for i in 1:(length(Ψ) - 1)
-        h_ac = ∂∂AC(i, Ψ, H, envs)
+        h_ac = ∂∂AC(i, Ψ, H(t), envs)
         Ψ.AC[i], convhist = exponentiate(h_ac, -1im * dt / 2, Ψ.AC[i], alg.expalg)
 
-        h_c = ∂∂C(i, Ψ, H, envs)
+        h_c = ∂∂C(i, Ψ, H(t), envs)
         Ψ.CR[i], convhist = exponentiate(h_c, 1im * dt / 2, Ψ.CR[i], alg.expalg)
     end
 
-    h_ac = ∂∂AC(length(Ψ), Ψ, H, envs)
+    h_ac = ∂∂AC(length(Ψ), Ψ, H(t), envs)
     Ψ.AC[end], convhist = exponentiate(h_ac, -1im * dt / 2, Ψ.AC[end], alg.expalg)
 
+    t += dt/2
+
     for i in length(Ψ):-1:2
-        h_ac = ∂∂AC(i, Ψ, H, envs)
+        h_ac = ∂∂AC(i, Ψ, H(t), envs)
         Ψ.AC[i], convhist = exponentiate(h_ac, -1im * dt / 2, Ψ.AC[i], alg.expalg)
 
-        h_c = ∂∂C(i - 1, Ψ, H, envs)
+        h_c = ∂∂C(i - 1, Ψ, H(t), envs)
         Ψ.CR[i - 1], convhist = exponentiate(h_c, 1im * dt / 2, Ψ.CR[i - 1], alg.expalg)
     end
 
-    h_ac = ∂∂AC(1, Ψ, H, envs)
+    h_ac = ∂∂AC(1, Ψ, H(t), envs)
     Ψ.AC[1], convhist = exponentiate(h_ac, -1im * dt / 2, Ψ.AC[1], alg.expalg)
     return Ψ, envs
 end
@@ -109,6 +111,7 @@ end
 
 function timestep!(Ψ::AbstractFiniteMPS,
                    H,
+                   t::Number,
                    dt::Number,
                    alg::TDVP2,
                    envs=environments(Ψ, H);
@@ -117,7 +120,7 @@ function timestep!(Ψ::AbstractFiniteMPS,
     for i in 1:(length(Ψ) - 1)
         ac2 = _transpose_front(Ψ.AC[i]) * _transpose_tail(Ψ.AR[i + 1])
 
-        h_ac2 = ∂∂AC2(i, Ψ, H, envs)
+        h_ac2 = ∂∂AC2(i, Ψ, H(t), envs)
         nac2, convhist = exponentiate(h_ac2, -1im * dt / 2, ac2, alg.expalg)
 
         nal, nc, nar = tsvd(nac2; trunc=alg.trscheme, alg=TensorKit.SVD())
@@ -126,16 +129,17 @@ function timestep!(Ψ::AbstractFiniteMPS,
         Ψ.AC[i + 1] = (complex(nc), _transpose_front(nar))
 
         if i != (length(Ψ) - 1)
-            Ψ.AC[i + 1], convhist = exponentiate(∂∂AC(i + 1, Ψ, H, envs), 1im * dt / 2,
+            Ψ.AC[i + 1], convhist = exponentiate(∂∂AC(i + 1, Ψ, H(t), envs), 1im * dt / 2,
                                                  Ψ.AC[i + 1], alg.expalg)
         end
     end
 
+    t += dt/2
     #right to left
     for i in length(Ψ):-1:2
         ac2 = _transpose_front(Ψ.AL[i - 1]) * _transpose_tail(Ψ.AC[i])
 
-        h_ac2 = ∂∂AC2(i - 1, Ψ, H, envs)
+        h_ac2 = ∂∂AC2(i - 1, Ψ, H(t), envs)
         (nac2, convhist) = exponentiate(h_ac2, -1im * dt / 2, ac2, alg.expalg)
 
         nal, nc, nar = tsvd(nac2; trunc=alg.trscheme, alg=TensorKit.SVD())
@@ -144,7 +148,7 @@ function timestep!(Ψ::AbstractFiniteMPS,
         Ψ.AC[i] = (complex(nc), _transpose_front(nar))
 
         if i != 2
-            Ψ.AC[i - 1], convhist = exponentiate(∂∂AC(i - 1, Ψ, H, envs), 1im * dt / 2,
+            Ψ.AC[i - 1], convhist = exponentiate(∂∂AC(i - 1, Ψ, H(t), envs), 1im * dt / 2,
                                                  Ψ.AC[i - 1], alg.expalg)
         end
     end
@@ -153,7 +157,7 @@ function timestep!(Ψ::AbstractFiniteMPS,
 end
 
 #copying version
-function timestep(Ψ::AbstractFiniteMPS, H, timestep, alg::Union{TDVP,TDVP2},
+function timestep(Ψ::AbstractFiniteMPS, H, t, timestep, alg::Union{TDVP,TDVP2},
                   envs=environments(Ψ, H))
-    return timestep!(copy(Ψ), H, timestep, alg, envs)
+    return timestep!(copy(Ψ), H, t, timestep, alg, envs)
 end
