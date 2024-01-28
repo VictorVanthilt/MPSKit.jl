@@ -63,7 +63,10 @@ function timestep(Ψ::InfiniteMPS, H, dt::Number, alg::TDVP, envs::Cache=environ
     return nstate, envs
 end
 
-function timestep!(Ψ::AbstractFiniteMPS, H, t, dt::Number, alg::TDVP, envs=environments(Ψ, H))
+function timestep!(Ψ::AbstractFiniteMPS, H, t, dt::Number, alg::TDVP, envs=missing)
+    if ismissing(envs)
+        envs = environments(Ψ, H(t))
+    end
     for i in 1:(length(Ψ) - 1)
         h_ac = ∂∂AC(i, Ψ, H(t), envs)
         Ψ.AC[i], convhist = exponentiate(h_ac, -1im * dt / 2, Ψ.AC[i], alg.expalg)
