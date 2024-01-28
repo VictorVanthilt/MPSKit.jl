@@ -114,9 +114,13 @@ function timestep!(Ψ::AbstractFiniteMPS,
                    t::Number,
                    dt::Number,
                    alg::TDVP2,
-                   envs=environments(Ψ, H);
+                   envs=missing;
                    rightorthed=false)
     #left to right
+    if ismissing(envs)
+        envs = environments(Ψ, H(t))
+    end
+
     for i in 1:(length(Ψ) - 1)
         ac2 = _transpose_front(Ψ.AC[i]) * _transpose_tail(Ψ.AR[i + 1])
 
@@ -158,6 +162,11 @@ end
 
 #copying version
 function timestep(Ψ::AbstractFiniteMPS, H, t, timestep, alg::Union{TDVP,TDVP2},
-                  envs=environments(Ψ, H))
+                  envs=missing)
+
+    if ismissing(environments)
+        envs = environments(Ψ, H(t))
+    end
+
     return timestep!(copy(Ψ), H, t, timestep, alg, envs)
 end
