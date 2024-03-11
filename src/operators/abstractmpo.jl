@@ -2,8 +2,11 @@
 # ----------------
 
 const MPOTensor{S} = AbstractTensorMap{S,2,2} where {S}
-const SparseMPOTensor{T<:MPOTensor} = BlockTensorMap{S,2,2,T,4} where {S}
-const AbstractMPOTensor{S} = Union{SparseMPOTensor{<:MPOTensor{S}},MPOTensor{S}} where {S}
+# const SparseMPOTensor{T<:MPOTensor} = BlockTensorMap{S,2,2,T,4} where {S}
+# const AbstractMPOTensor{S} = Union{SparseMPOTensor{<:MPOTensor{S}},MPOTensor{S}} where {S}
+# VICTOR CHANGES
+const SparseMPOTensor = BlockTensorMap{S,2,2,E,4} where {S,E<:Number}
+const AbstractMPOTensor{S} = Union{SparseMPOTensor,MPOTensor{S}} where {S}
 
 left_virtualspace(O::AbstractMPOTensor) = space(O, 1)
 right_virtualspace(O::AbstractMPOTensor) = space(O, 4)

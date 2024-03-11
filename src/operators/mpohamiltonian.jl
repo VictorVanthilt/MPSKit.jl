@@ -53,7 +53,7 @@ function MPOHamiltonian(data::AbstractArray{Union{T,E},3}) where {T<:MPOTensor,E
         Vₗ = SumSpace(virtualspaces[i]...)
         Vᵣ = SumSpace(virtualspaces[i + 1]...)
         P = SumSpace(physicalspaces[i])
-        tdst = BlockTensorMap{S,2,2,ttype}(undef, Vₗ ⊗ P, P ⊗ Vᵣ)
+        tdst = BlockTensorMap{S,2,2,E}(undef, Vₗ ⊗ P, P ⊗ Vᵣ)
         for j in axes(data, 2), k in axes(data, 3)
             if data[i, j, k] isa E
                 iszero(data[i, j, k]) && continue
@@ -74,7 +74,6 @@ function MPOHamiltonian(data::AbstractArray{Union{T,E},3}) where {T<:MPOTensor,E
         end
         return tdst
     end
-
     return MPOHamiltonian(Ws)
 end
 
