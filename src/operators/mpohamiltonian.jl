@@ -202,7 +202,7 @@ function Base.:+(a::MPOHamiltonian{T}, b::MPOHamiltonian{T}) where {T}
             elseif I[4] == size(h1, 4)
                 if I[1] == size(h1, 1)
                     # 1 block
-                    Wnew[1, 1, 1, end] = O
+                    Wnew[I[1], 1, 1, end] = O
                 else
                     # B block
                     Wnew[I[1], 1, 1, end] = O
