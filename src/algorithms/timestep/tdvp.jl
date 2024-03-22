@@ -167,7 +167,7 @@ end
 function timestep(Ψ::AbstractFiniteMPS, H, t, timestep, alg::Union{TDVP,TDVP2},
                   envs=missing)
 
-    if ismissing(environments)
+    if ismissing(envs)
         envs = environments(Ψ, H(t))
     end
 
