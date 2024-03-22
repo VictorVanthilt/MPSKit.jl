@@ -33,8 +33,8 @@ function gen_exci_lw_rw(left_gs::Union{FiniteMPS{A},InfiniteMPS{A}},
                         ham::Union{SparseMPO,MPOHamiltonian},
                         right_gs,
                         excileg) where {A}
-    B = tensormaptype(spacetype(A), 2, 2, storagetype(A))
-    lw = PeriodicVector{BlockTensorMap{spacetype(A),2,2,B,4}}(undef, length(left_gs))
+    # B = tensormaptype(spacetype(A), 2, 2, storagetype(A))
+    lw = PeriodicVector{BlockTensorMap{scalartype(A),spacetype(A),2,2,4}}(undef, length(left_gs))
     for i in 1:length(lw)
         V_mps1 = SumSpace(left_virtualspace(left_gs, i - 1))
         V_mps2 = SumSpace(right_virtualspace(right_gs, i - 1))
@@ -43,7 +43,7 @@ function gen_exci_lw_rw(left_gs::Union{FiniteMPS{A},InfiniteMPS{A}},
                                V_mps1 ⊗ V_mpo' ← excileg' ⊗ V_mps2)
     end
 
-    rw = PeriodicVector{BlockTensorMap{spacetype(A),2,2,B,4}}(undef, length(left_gs))
+    rw = PeriodicVector{BlockTensorMap{scalartype(A),spacetype(A),2,2,4}}(undef, length(left_gs))
     for i in 1:length(rw)
         V_mps1 = SumSpace(left_virtualspace(left_gs, i))
         V_mps2 = SumSpace(right_virtualspace(right_gs, i))

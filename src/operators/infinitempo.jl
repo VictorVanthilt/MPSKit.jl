@@ -50,7 +50,7 @@ function InfiniteMPO(data::AbstractArray{Union{T,E},3}) where {T<:MPOTensor,E<:N
         Vₗ = SumSpace(virtualspaces[i]...)
         Vᵣ = SumSpace(virtualspaces[i + 1]...)
         P = SumSpace(physicalspaces[i])
-        tdst = BlockTensorMap{S,2,2,ttype}(undef, Vₗ ⊗ P, P ⊗ Vᵣ)
+        tdst = BlockTensorMap{scalartype(T),S,2,2}(undef, Vₗ ⊗ P, P ⊗ Vᵣ)
         for j in axes(data, 2), k in axes(data, 3)
             if data[i, j, k] isa E
                 iszero(data[i, j, k]) && continue

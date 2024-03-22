@@ -25,12 +25,12 @@ function force_planar(x::TensorKit.BraidingTensor)
     V2 = force_planar(x.V2)
     return TensorKit.BraidingTensor{typeof(V1),storagetype(x)}(V1, V2, x.adjoint)
 end
-function force_planar(x::BlockTensorMap{S,N₁,N₂}) where {S,N₁,N₂}
+function force_planar(x::BlockTensorMap{E,S,N₁,N₂}) where {E,S,N₁,N₂}
     planar_tensors = Dict(I => force_planar(V) for (I, V) in nonzero_pairs(x))
     ttypes = Union{unique(typeof(t) for t in values(planar_tensors))...}
     cod = force_planar(codomain(x))
     dom = force_planar(domain(x))
-    tdst = BlockTensorMap{spacetype(ttypes),N₁,N₂,ttypes}(undef, cod, dom)
+    tdst = BlockTensorMap{E,spacetype(ttypes),N₁,N₂}(undef, cod, dom)
     for (I, v) in planar_tensors
         tdst[I] = v
     end

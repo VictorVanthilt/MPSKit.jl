@@ -164,8 +164,8 @@ end
 
 function fuser(::Type{T}, V1::SumSpace{S}, V2::SumSpace{S}) where {T<:Number,S<:IndexSpace}
     W = fuse(V1, V2)
-    TT = tensormaptype(S, 1, 2, T)
-    F = BlockTensorMap{S,1,2,TT,3}(undef, W ← V1 ⊗ V2)
+    # TT = tensormaptype(S, 1, 2, T)
+    F = BlockTensorMap{T,S,1,2,3}(undef, W ← V1 ⊗ V2)
     for I in CartesianIndices(F)
         V = getsubspace(space(F), I)
         if I[1] == I[2] + (I[3] - 1) * size(F, 2)
