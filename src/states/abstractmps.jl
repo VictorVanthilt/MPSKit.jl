@@ -2,12 +2,11 @@
 Tensor types
 ===========================================================================================#
 
-const MPSBondTensor{S} = AbstractTensorMap{S,1,1} where {S}
-const GenericMPSTensor{S,N} = AbstractTensorMap{S,N,1} where {S,N} #some functions are also defined for "general mps tensors" (used in peps code)
-const MPSTensor{S} = GenericMPSTensor{S,2} where {S} #the usual mps tensors on which we work
+const MPSBondTensor{S,E} = AbstractTensorMap{E,S,1,1}
+const GenericMPSTensor{S,N,E} = AbstractTensorMap{E,S,N,1} #some functions are also defined for "general mps tensors" (used in peps code)
+const MPSTensor{S,E} = GenericMPSTensor{S,2,E} #the usual mps tensors on which we work
 #const ExMPSTensor{S,N,A,G,F1,F2}=GenericMPSTensor{S,3,A,G,F1,F2} #and mps tensor with an extra excitation - utility leg
-
-const AbstractMPSTensor{S} = AbstractBlockOrTensorMap{S,2,1}
+const AbstractMPSTensor{S,E} = AbstractBlockOrTensorMap{E,S,2,1}
 
 """
     MPSTensor([f, eltype], d::Int, left_D::Int, [right_D]::Int])

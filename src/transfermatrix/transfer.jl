@@ -15,13 +15,13 @@ apply a transfer matrix to the left.
  └─Ā─
 ```
 """
-function transfer_left(v::AbstractTensorMap{S,1,N₁}, A::GenericMPSTensor{S,N₂},
-                       Ā::GenericMPSTensor{S,N₂}) where {S,N₁,N₂}
+function transfer_left(v::AbstractTensorMap{E,S,1,N₁}, A::GenericMPSTensor{S,N₂},
+                       Ā::GenericMPSTensor{S,N₂}) where {E,S,N₁,N₂}
     return transfer_left(v, A, Ā, Defaults.get_backend(), Defaults.get_allocator())
 end
-@generated function transfer_left(v::AbstractTensorMap{S,1,N₁}, A::GenericMPSTensor{S,N₂},
+@generated function transfer_left(v::AbstractTensorMap{E,S,1,N₁}, A::GenericMPSTensor{S,N₂},
                                   Ā::GenericMPSTensor{S,N₂},
-                                  ::Backend, ::Alloc) where {Backend,Alloc,S,N₁,N₂}
+                                  ::Backend, ::Alloc) where {Backend,Alloc,E,S,N₁,N₂}
     t_out = tensorexpr(:v, -1, -(2:(N₁ + 1)))
     t_top = tensorexpr(:A, 2:(N₂ + 1), -(N₁ + 1))
     t_bot = tensorexpr(:Ā, (1, (3:(N₂ + 1))...), -1)
@@ -48,9 +48,9 @@ apply a transfer matrix to the right.
 #                         Ā::GenericMPSTensor{S,N₂}) where {S,N₁,N₂}
 #     return transfer_right(v, A, Ā, Defaults.get_backend(), Defaults.get_allocator())
 # end
-@generated function transfer_right(v::AbstractTensorMap{S,1,N₁}, A::GenericMPSTensor{S,N₂},
+@generated function transfer_right(v::AbstractTensorMap{E,S,1,N₁}, A::GenericMPSTensor{S,N₂},
                                    Ā::GenericMPSTensor{S,N₂}, ::Backend=Defaults.get_backend(),
-                                   ::Alloc=Defaults.get_allocator()) where {Backend,Alloc,S,N₁,N₂}
+                                   ::Alloc=Defaults.get_allocator()) where {Backend,Alloc,E,S,N₁,N₂}
     t_out = tensorexpr(:v, -1, -(2:(N₁ + 1)))
     t_top = tensorexpr(:A, (-1, reverse(3:(N₂ + 1))...), 1)
     t_bot = tensorexpr(:Ā, (-(N₁ + 1), reverse(3:(N₂ + 1))...), 2)

@@ -46,14 +46,14 @@ function MPOHamiltonian(data::AbstractArray{Union{T,E},3}) where {T<:MPOTensor,E
     physicalspaces, virtualspaces = _deduce_spaces(data)
 
     # construct blocktensors
-    τtype = BraidingTensor{S,storagetype(T)}
+    τtype = BraidingTensor{E,S}
     ttype = Union{T,τtype}
 
     Ws = map(1:L) do i
         Vₗ = SumSpace(virtualspaces[i]...)
         Vᵣ = SumSpace(virtualspaces[i + 1]...)
         P = SumSpace(physicalspaces[i])
-        tdst = BlockTensorMap{S,2,2,E}(undef, Vₗ ⊗ P, P ⊗ Vᵣ)
+        tdst = BlockTensorMap{E,S,2,2}(undef, Vₗ ⊗ P, P ⊗ Vᵣ)
         for j in axes(data, 2), k in axes(data, 3)
             if data[i, j, k] isa E
                 iszero(data[i, j, k]) && continue

@@ -193,8 +193,8 @@ end
 function contract_expval(A::MPSTensor{S},
                          GL::AbstractMPSTensor{S},
                          GR::AbstractMPSTensor{S},
-                         O::BlockTensorMap{S,2,2},
-                         Ā::MPSTensor{S}=A) where {S}
+                         O::BlockTensorMap{E,S,2,2},
+                         Ā::MPSTensor{S}=A) where {E,S}
     return @plansor convert(BlockTensorMap, GL)[1 2; 3] *
                     convert(BlockTensorMap, A)[3 7; 5] *
                     convert(BlockTensorMap, GR)[5 8; 6] *
