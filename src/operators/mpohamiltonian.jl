@@ -96,7 +96,7 @@ function MPOHamiltonian(local_mpo::Vector{O}) where {O<:MPOTensor}
 
     Vₗ = push!(left_virtualspace.(local_mpo), dual(right_virtualspace(local_mpo[end])))
     Vᵣ = pushfirst!(dual.(right_virtualspace.(local_mpo)), left_virtualspace(local_mpo[1]))
-    W = BlockTensorMap{S,2,2,ttype}(undef, SumSpace(Vₗ) ⊗ P, P ⊗ SumSpace(Vᵣ))
+    W = BlockTensorMap{scalartype(O),S,2,2}(undef, SumSpace(Vₗ) ⊗ P, P ⊗ SumSpace(Vᵣ))
     
     W[1, 1, 1, 1] = τ
     W[end, 1, 1, end] = τ
@@ -272,7 +272,6 @@ function Base.:*(b::H, a::H) where {H<:MPOHamiltonian}
     E = promote_type(scalartype(b), scalartype(a))
     Fs = PeriodicArray(fuser.(E, left_virtualspace.(parent(a)),
                               left_virtualspace.(parent(b))))
-
     C = similar(b.data)
     for i in 1:length(b)
         C[i] = T(undef,
