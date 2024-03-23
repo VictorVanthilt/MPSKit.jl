@@ -1,9 +1,9 @@
 # MPO Tensor types
 # ----------------
 
-const MPOTensor{S,E} = AbstractTensorMap{E,S,2,2} where {E<:Number,S<:IndexSpace}
-const SparseMPOTensor{T<:MPOTensor,E} = BlockTensorMap{E,S,2,2,4} where {E<:Number,S<:IndexSpace}
-const AbstractMPOTensor{S,E} = Union{BlockTensorMap{E,S,2,2,4},<:AbstractTensorMap{E,S,2,2}} where {E<:Number,S<:IndexSpace}
+const MPOTensor{S,E} = AbstractTensorMap{E,S,2,2}
+const SparseMPOTensor{T<:MPOTensor,E} = BlockTensorMap{E,S,2,2,4} where {S}
+const AbstractMPOTensor{S,E} = Union{BlockTensorMap{E,S,2,2,4},<:AbstractTensorMap{E,S,2,2}}
 
 left_virtualspace(O::AbstractMPOTensor) = space(O, 1)
 right_virtualspace(O::AbstractMPOTensor) = space(O, 4)
@@ -14,9 +14,9 @@ left_virtualsize(O::SparseMPOTensor) = size(O, 1)
 right_virtualsize(O::MPOTensor) = 1
 right_virtualsize(O::SparseMPOTensor) = size(O, 4)
 
-function ismpoidentity(O::MPOTensor{S}; tol=eps(real(scalartype(O)))^3 / 4) where {S}
+function ismpoidentity(O::MPOTensor{S,E}; tol=eps(real(scalartype(O)))^3 / 4) where {S<:IndexSpace,E<:Number}
     O isa BraidingTensor && return true
-    τ = TensorKit.BraidingTensor{S,storagetype(O)}(space(O, 2), space(O, 1))
+    τ = TensorKit.BraidingTensor{E,S}(space(O, 2), space(O, 1))
     return space(O) == space(τ) && isapprox(O, τ; atol=tol)
 end
 
