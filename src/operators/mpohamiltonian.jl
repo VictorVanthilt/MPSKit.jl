@@ -255,7 +255,8 @@ function Base.:*(H::MPOHamiltonian, λ::Number)
     foreach(Hλ.data) do h
         # multiply scalar with start of every interaction
         # this avoids double counting
-        return rmul!(h[1, 1, 1, :], λ)
+        # 2:end to avoid multiplying the top left and bottom right corners
+        return rmul!(h[1, 1, 1, 2:end], λ)
     end
     return Hλ
 end
@@ -346,3 +347,5 @@ function isjordanstructure(O::SparseMPOTensor)
     return true
 end
 isjordanstructure(O::MPOHamiltonian) = all(isjordanstructure, parent(O))
+
+Base.copy(H::MPOHamiltonian{T}) where {T} = MPOHamiltonian{T}(map(copy, H.data))
