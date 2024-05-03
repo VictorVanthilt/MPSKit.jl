@@ -81,7 +81,7 @@ end
 MPOHamiltonian(data::AbstractArray{<:Any,3}) = MPOHamiltonian(_normalize_mpotypes(data))
 
 # Construct from local operators
-function MPOHamiltonian(local_operator::TensorMap{S,N,N}) where {S,N}
+function MPOHamiltonian(local_operator::TensorMap{E,S,N,N}) where {E,S,N}
     return MPOHamiltonian(decompose_localmpo(add_util_leg(local_operator)))
 end
 function MPOHamiltonian(local_mpo::Vector{O}) where {O<:MPOTensor}
@@ -91,7 +91,7 @@ function MPOHamiltonian(local_mpo::Vector{O}) where {O<:MPOTensor}
     V₀ = oneunit(S)
     P = physicalspace(local_mpo[1])
 
-    τ = BraidingTensor{S,storagetype(O)}(P, V₀)
+    τ = BraidingTensor{scalartype(O),S}(P, V₀)
     ttype = Union{O,typeof(τ)}
 
     Vₗ = push!(left_virtualspace.(local_mpo), dual(right_virtualspace(local_mpo[end])))
