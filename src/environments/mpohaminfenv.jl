@@ -103,11 +103,11 @@ function calclw!(fixpoints, st::InfiniteMPS, H::MPOHamiltonian;
         if isone(H, i) # identity matrices; do the hacky renormalization
             tm = regularize(TransferMatrix(st.AL, st.AL), l_LL(st), r_LL(st))
             fixpoints[1][1, i, 1], convhist = linsolve(flip(tm), fixpoints[1][1, i, 1],
-                                        prev, solver, 1, -1) 
+                                                       prev, solver, 1, -1)
             convhist.converged == 0 && @info "calclw failed to converge" convhist
 
             (len > 1) && left_cyclethrough!(i, fixpoints, H, st)
-            
+
             # go through the unitcell, again subtracting fixpoints
             for 🥔 in 1:len
                 fp = get!(fixpoints[🥔], CartesianIndex(1, i, 1))

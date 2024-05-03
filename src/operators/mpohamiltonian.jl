@@ -97,7 +97,7 @@ function MPOHamiltonian(local_mpo::Vector{O}) where {O<:MPOTensor}
     Vₗ = push!(left_virtualspace.(local_mpo), dual(right_virtualspace(local_mpo[end])))
     Vᵣ = pushfirst!(dual.(right_virtualspace.(local_mpo)), left_virtualspace(local_mpo[1]))
     W = BlockTensorMap{scalartype(O),S,2,2}(undef, SumSpace(Vₗ) ⊗ P, P ⊗ SumSpace(Vᵣ))
-    
+
     W[1, 1, 1, 1] = τ
     W[end, 1, 1, end] = τ
     for (i, o) in enumerate(local_mpo)
@@ -336,10 +336,10 @@ function Base.:*(H::MPOHamiltonian, mps::FiniteMPS)
 
     # extract mps tensors
     A = [mps.AC[1]; mps.AR[2:end]]
-    
+
     # extract mpo tensors -> put boundary conditions in place
     O = copy(H.data)
-    
+
     V_left = left_virtualspace(H, 0)
     U_left = similar(H[1], V_left, oneunit(V_left))'
     U_left[1] = fill!(U_left[1], one(scalartype(H)))
@@ -349,7 +349,7 @@ function Base.:*(H::MPOHamiltonian, mps::FiniteMPS)
     U_right = similar(H[end], V_right', oneunit(V_right))
     U_right[end] = fill!(U_right[end], one(scalartype(H)))
     @plansor O[end][-1 -2; -3 -4] := O[end][-1 -2; -3 1] * U_right[1; -4]
-    
+
     E = promote_type(scalartype(H), scalartype(A))
 
     local Fᵣ # trick to make Fᵣ defined in the loop

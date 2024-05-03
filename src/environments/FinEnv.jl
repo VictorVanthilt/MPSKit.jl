@@ -50,25 +50,26 @@ function FinEnv(ψ::AbstractFiniteMPS,
     return FinEnv(above, O, left_deps, right_deps, GL, GR)
 end
 
-function FinEnv(ψ::AbstractFiniteMPS, O::Vector{Nothing}, above::Union{Nothing,AbstractFiniteMPS})
+function FinEnv(ψ::AbstractFiniteMPS, O::Vector{Nothing},
+                above::Union{Nothing,AbstractFiniteMPS})
     # Initialize left environment tensors
     GL = map(0:length(ψ)) do i
         Vbot = left_virtualspace(ψ, i)
         Vtop = isnothing(above) ? Vbot : left_virtualspace(above, i)
         return TensorMap(undef, scalartype(ψ), Vbot ← Vtop)
     end
-    
+
     # Initialize right environment tensors
     GR = map(0:length(ψ)) do i
         Vbot = right_virtualspace(ψ, i)
         Vtop = isnothing(above) ? Vbot : right_virtualspace(above, i)
         return TensorMap(undef, scalartype(ψ), Vtop ← Vbot)
     end
-    
+
     # Initialize dependency vectors
     left_deps = fill!(similar(ψ.AL), similar(ψ.AL[1]))
     right_deps = fill!(similar(ψ.AR), similar(ψ.AR[1]))
-    
+
     return FinEnv(ψ, O, left_deps, right_deps, GL, GR)
 end
 
@@ -120,7 +121,7 @@ function environments(below::S, above::S) where {S<:Union{FiniteMPS,WindowMPS}}
     envs = FinEnv(below, opp, above)
     envs.leftenvs[1] = l_LL(above)
     envs.rightenvs[end] = r_RR(above)
-    
+
     return envs
 end
 

@@ -34,7 +34,8 @@ function gen_exci_lw_rw(left_gs::Union{FiniteMPS{A},InfiniteMPS{A}},
                         right_gs,
                         excileg) where {A}
     # B = tensormaptype(spacetype(A), 2, 2, storagetype(A))
-    lw = PeriodicVector{BlockTensorMap{scalartype(A),spacetype(A),2,2,4}}(undef, length(left_gs))
+    lw = PeriodicVector{BlockTensorMap{scalartype(A),spacetype(A),2,2,4}}(undef,
+                                                                          length(left_gs))
     for i in 1:length(lw)
         V_mps1 = SumSpace(left_virtualspace(left_gs, i - 1))
         V_mps2 = SumSpace(right_virtualspace(right_gs, i - 1))
@@ -43,7 +44,8 @@ function gen_exci_lw_rw(left_gs::Union{FiniteMPS{A},InfiniteMPS{A}},
                                V_mps1 ⊗ V_mpo' ← excileg' ⊗ V_mps2)
     end
 
-    rw = PeriodicVector{BlockTensorMap{scalartype(A),spacetype(A),2,2,4}}(undef, length(left_gs))
+    rw = PeriodicVector{BlockTensorMap{scalartype(A),spacetype(A),2,2,4}}(undef,
+                                                                          length(left_gs))
     for i in 1:length(rw)
         V_mps1 = SumSpace(left_virtualspace(left_gs, i))
         V_mps2 = SumSpace(right_virtualspace(right_gs, i))
@@ -104,19 +106,19 @@ function environments(exci::InfiniteQP, ham::MPOHamiltonian, lenvs, renvs;
 
     for pos in length(exci):-1:1
         rBs[pos - 1] = TransferMatrix(AL[pos], ham[pos], AR[pos]) *
-                          rBs[pos] *
-                          exp(1im * exci.momentum)
+                       rBs[pos] *
+                       exp(1im * exci.momentum)
         rBs[pos - 1] += TransferMatrix(exci[pos], ham[pos], AR[pos]) *
-                           rightenv(renvs, pos, exci.right_gs) *
-                           exp(1im * exci.momentum)
+                        rightenv(renvs, pos, exci.right_gs) *
+                        exp(1im * exci.momentum)
 
         exci.trivial && for i in ids
                         @plansor rBs[pos - 1][-1 -2; -3 -4] -= τ[6 4; 1 3] *
-                                                                  rBs[i, pos - 1][1 3; -3 2] *
-                                                                  l_LR(exci.left_gs, pos)[2; 4] *
-                                                                  r_LR(exci.left_gs, pos - 1)[-1;
-                                                                                              5] *
-                                                                  τ[-2 -4; 5 6]
+                                                               rBs[i, pos - 1][1 3; -3 2] *
+                                                               l_LR(exci.left_gs, pos)[2; 4] *
+                                                               r_LR(exci.left_gs, pos - 1)[-1;
+                                                                                           5] *
+                                                               τ[-2 -4; 5 6]
                         end
     end
 

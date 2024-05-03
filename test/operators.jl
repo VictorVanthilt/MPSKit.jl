@@ -76,7 +76,7 @@ end
     ou = oneunit(physical_space)
 
     ts = InfiniteMPS([physical_space], [ou ⊕ physical_space])
-    
+
     W = convert(DenseMPO, make_time_mpo(ham, 1im * 0.5, WII()))
 
     @test abs(dot(W * (W * ts), (W * W) * ts)) ≈ 1.0 atol = 1e-10

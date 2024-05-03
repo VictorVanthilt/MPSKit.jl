@@ -1,12 +1,13 @@
 using MPSKit
 using Test
 
-using TestEnv; TestEnv.activate("MPSKit")
+using TestEnv;
+TestEnv.activate("MPSKit");
 
 include("setup.jl")
 
 psi = FiniteMPS((ℂ^2)^10, ℂ^4)
-H = transverse_field_ising(; g = 0.1)
+H = transverse_field_ising(; g=0.1)
 
 envs = environments(psi, H)
 
@@ -23,9 +24,6 @@ for t in 0:dt:10
 end
 ψ2, envs = timestep!(ψ, H, 0.1, TDVP(), envs)
 
-
-
 H_mpo = make_time_mpo(H, 0.1, TaylorCluster{2}())
-
 
 # Union type tests

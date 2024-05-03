@@ -1,5 +1,7 @@
 const AbstractBlockOrTensorMap{E,S,N₁,N₂} = Union{BlockTensorMap{E,S,N₁,N₂},
-                                                AbstractTensorMap{E,S,N₁,N₂}} where {E,S,N₁,N₂}
+                                                  AbstractTensorMap{E,S,N₁,N₂}} where {E,S,
+                                                                                       N₁,
+                                                                                       N₂}
 
 function _transpose_front(t::AbstractTensorMap) # make TensorMap{S,N₁+N₂-1,1}
     I1 = TensorKit.codomainind(t)
@@ -159,7 +161,9 @@ function between(x1, x, x2)
     return x
 end
 
-fuser(::Type{T}, V1::VectorSpace, V2::VectorSpace) where {T<:Number} = fuser(T, promote(V1, V2)...)
+function fuser(::Type{T}, V1::VectorSpace, V2::VectorSpace) where {T<:Number}
+    return fuser(T, promote(V1, V2)...)
+end
 function fuser(::Type{T}, V1::S, V2::S) where {T<:Number,S<:IndexSpace}
     return isomorphism(Matrix{T}, fuse(V1 ⊗ V2), V1 ⊗ V2)
 end

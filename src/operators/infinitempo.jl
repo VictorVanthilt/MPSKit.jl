@@ -41,7 +41,7 @@ function InfiniteMPO(data::AbstractArray{Union{T,E},3}) where {T<:MPOTensor,E<:N
     # deduce spaces from tensors
     S = spacetype(T)
     physicalspaces, virtualspaces = _deduce_spaces(data)
-    
+
     # construct blocktensors
     τtype = TensorKit.BraidingTensor{S,TensorKit.storagetype(T)}
     ttype = Union{T,τtype}
@@ -97,15 +97,18 @@ function Base.convert(::Type{DenseMPO}, x::InfiniteMPO)
     data = map(Base.Fix1(convert, MPOTensor{spacetype(x)}), parent(x))
     # filter out zero blocks -> necessary to avoid problems with environments (?)
     for i in 1:length(x)
-        U, S, V, = tsvd!(transpose(data[i], ((3, 1, 2), (4,))); trunc=truncbelow(eps(real(scalartype(x)))^(4/5)))
+        U, S, V, = tsvd!(transpose(data[i], ((3, 1, 2), (4,)));
+                         trunc=truncbelow(eps(real(scalartype(x)))^(4 / 5)))
         data[i] = transpose(U, ((2, 3), (1, 4)))
         @plansor data[i + 1][-1 -2; -3 -4] := S[-1; 1] * V[1; 2] * data[i + 1][2 -2; -3 -4]
-        
-        U′, S′, V′, = tsvd!(transpose(data[i], ((1,), (3, 4, 2))); trunc=truncbelow(eps(real(scalartype(x)))^(4/5)))
+
+        U′, S′, V′, = tsvd!(transpose(data[i], ((1,), (3, 4, 2)));
+                            trunc=truncbelow(eps(real(scalartype(x)))^(4 / 5)))
         data[i] = transpose(V′, ((1, 4), (2, 3)))
-        @plansor data[i - 1][-1 -2; -3 -4] := data[i - 1][-1 -2; -3 1] * U′[1; 2] * S′[2; -4]
+        @plansor data[i - 1][-1 -2; -3 -4] := data[i - 1][-1 -2; -3 1] * U′[1; 2] *
+                                              S′[2; -4]
     end
-    
+
     return InfiniteMPO(data)
 end
 

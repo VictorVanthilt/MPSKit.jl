@@ -14,7 +14,8 @@ left_virtualsize(O::SparseMPOTensor) = size(O, 1)
 right_virtualsize(O::MPOTensor) = 1
 right_virtualsize(O::SparseMPOTensor) = size(O, 4)
 
-function ismpoidentity(O::MPOTensor{S,E}; tol=eps(real(scalartype(O)))^3 / 4) where {S<:IndexSpace,E<:Number}
+function ismpoidentity(O::MPOTensor{S,E};
+                       tol=eps(real(scalartype(O)))^3 / 4) where {S<:IndexSpace,E<:Number}
     O isa BraidingTensor && return true
     τ = TensorKit.BraidingTensor{E,S}(space(O, 2), space(O, 1))
     return space(O) == space(τ) && isapprox(O, τ; atol=tol)

@@ -78,7 +78,7 @@ function timestep!(Ψ::AbstractFiniteMPS, H, t, dt::Number, alg::TDVP, envs=miss
     h_ac = ∂∂AC(length(Ψ), Ψ, H(t), envs)
     Ψ.AC[end], convhist = exponentiate(h_ac, -1im * dt / 2, Ψ.AC[end], alg.expalg)
 
-    t += dt/2
+    t += dt / 2
 
     for i in length(Ψ):-1:2
         h_ac = ∂∂AC(i, Ψ, H(t), envs)
@@ -141,7 +141,7 @@ function timestep!(Ψ::AbstractFiniteMPS,
         end
     end
 
-    t += dt/2
+    t += dt / 2
     #right to left
     for i in length(Ψ):-1:2
         ac2 = _transpose_front(Ψ.AL[i - 1]) * _transpose_tail(Ψ.AC[i])
@@ -166,7 +166,6 @@ end
 #copying version
 function timestep(Ψ::AbstractFiniteMPS, H, t, timestep, alg::Union{TDVP,TDVP2},
                   envs=missing)
-
     if ismissing(envs)
         envs = environments(Ψ, H(t))
     end

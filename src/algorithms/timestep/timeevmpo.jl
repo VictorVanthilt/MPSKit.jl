@@ -18,7 +18,7 @@ function make_time_mpo(H::MPOHamiltonian, dt::Number, alg::TaylorCluster)
     τ = -1im * dt
     # start with H^N
     H_n = H^N
-    
+
     V = left_virtualsize(H, 1)
     linds = LinearIndices(ntuple(i -> V, N))
     cinds = CartesianIndices(linds)

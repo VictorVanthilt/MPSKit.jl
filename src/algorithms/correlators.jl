@@ -40,7 +40,8 @@ function correlator(state::AbstractMPS, O₁::MPOTensor, O₂::MPOTensor, i::Int
     return G
 end
 
-function correlator(state::AbstractMPS, O₁₂::AbstractTensorMap{E,S,2,2}, i::Int, j) where {E,S}
+function correlator(state::AbstractMPS, O₁₂::AbstractTensorMap{E,S,2,2}, i::Int,
+                    j) where {E,S}
     O₁, O₂ = decompose_localmpo(add_util_leg(O₁₂))
     return correlator(state, O₁, O₂, i, j)
 end
