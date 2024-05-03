@@ -11,7 +11,7 @@ An algorithm that uses truncated SVD to change the bond dimension of a Ψ.
 end
 
 changebonds(Ψ::AbstractFiniteMPS, alg::SvdCut) = changebonds!(copy(Ψ), alg)
-function changebonds!(Ψ::AbstractFiniteMPS, alg::SvdCut)
+function changebonds!(Ψ::AbstractFiniteMPS, alg::SvdCut; normalize=true)
     for i in (length(Ψ) - 1):-1:1
         U, S, V, = tsvd(Ψ.CR[i]; trunc=alg.trscheme, alg=TensorKit.SVD())
         AL′ = Ψ.AL[i] * U
@@ -19,7 +19,7 @@ function changebonds!(Ψ::AbstractFiniteMPS, alg::SvdCut)
         AR′ = _transpose_front(V * _transpose_tail(Ψ.AR[i + 1]))
         Ψ.AC[i + 1] = (complex(S), AR′)
     end
-    return normalize!(Ψ)
+    return normalize ? normalize!(Ψ) : Ψ
 end
 
 function changebonds(Ψ::DenseMPO, alg::SvdCut)
