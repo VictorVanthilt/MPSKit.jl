@@ -107,6 +107,31 @@ function MPOHamiltonian(local_mpo::Vector{O}) where {O<:MPOTensor}
     return MPOHamiltonian([W])
 end
 
+# Converters
+# ----------
+# TODO: this assumes Finite mpo hamiltonian, split off these cases.
+function Base.convert(::Type{T}, H::MPOHamiltonian) where {T<:TensorMap}
+    N = length(H)
+    # add trivial tensors to remove left and right trivial leg.
+    V_left = left_virtualspace(H, 1)
+    U_left = similar(H[1], V_left)'
+    U_left[1] = fill!(U_left[1], one(scalartype(H)))
+
+    V_right = right_virtualspace(H, length(H))
+    U_right = similar(H[end], V_right')
+    U_right[end] = fill!(U_right[end], one(scalartype(H)))
+
+    tensors = [U_left, H.data..., U_right]
+    indices = [[i, -i, -(i + N), i + 1] for i in 1:N]
+    pushfirst!(indices, [1])
+    push!(indices, [N + 1])
+
+    O = ncon(tensors, indices)
+
+    return permute(O[1], (ntuple(identity, N), ntuple(i -> i + N, N)))
+end
+
+
 # Properties
 # ----------
 
