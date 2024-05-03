@@ -329,7 +329,7 @@ function Base.:(^)(a::MPOHamiltonian, n::Int)
     return Base.power_by_squaring(a, n)
 end
 
-function Base.:*(H::MPOHamiltonian, mps::FiniteMPS)
+function Base.:*(H::Union{MPOHamiltonian,SparseMPO}, mps::FiniteMPS)
     length(H) == length(mps) || throw(ArgumentError("dimension mismatch"))
 
     # extract mps tensors
@@ -345,7 +345,8 @@ function Base.:*(H::MPOHamiltonian, mps::FiniteMPS)
 
     V_right = right_virtualspace(H, length(H))
     U_right = similar(H[end], V_right', oneunit(V_right))
-    U_right[end] = fill!(U_right[end], one(scalartype(H)))
+    idx = H isa SparseMPO ? 1 : lastindex(U_right)
+    U_right[idx] = fill!(U_right[idx], one(scalartype(H)))
     @plansor O[end][-1 -2; -3 -4] := O[end][-1 -2; -3 1] * U_right[1; -4]
 
     E = promote_type(scalartype(H), scalartype(A))
