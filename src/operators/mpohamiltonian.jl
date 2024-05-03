@@ -131,7 +131,6 @@ function Base.convert(::Type{T}, H::MPOHamiltonian) where {T<:TensorMap}
     return permute(O[1], (ntuple(identity, N), ntuple(i -> i + N, N)))
 end
 
-
 # Properties
 # ----------
 
@@ -182,7 +181,9 @@ function Base.:+(H::MPOHamiltonian, λs::AbstractVector{<:Number})
     H′ = deepcopy(H)
     foreach(H′.data, λs) do h, λ
         D = h[1, 1, 1, end]
-        h[1, 1, 1, end] = add(D, BraidingTensor{spacetype(H),storagetype(H)}(domain(D)...), λ)
+        return h[1, 1, 1, end] = add(D,
+                                     BraidingTensor{spacetype(H),storagetype(H)}(domain(D)...),
+                                     λ)
     end
     return H′
 end
@@ -328,6 +329,41 @@ end
 function Base.:(^)(a::MPOHamiltonian, n::Int)
     n >= 1 || throw(DomainError(n, "n should be a positive integer"))
     return Base.power_by_squaring(a, n)
+end
+
+function Base.:*(H::MPOHamiltonian, mps::FiniteMPS)
+    length(H) == length(mps) || throw(ArgumentError("dimension mismatch"))
+
+    # extract mps tensors
+    A = [mps.AC[1]; mps.AR[2:end]]
+    
+    # extract mpo tensors -> put boundary conditions in place
+    O = copy(H.data)
+    
+    V_left = left_virtualspace(H, 0)
+    U_left = similar(H[1], V_left, oneunit(V_left))'
+    U_left[1] = fill!(U_left[1], one(scalartype(H)))
+    @plansor O[1][-1 -2; -3 -4] := U_left[-1; 1] * O[1][1 -2; -3 -4]
+
+    V_right = right_virtualspace(H, length(H))
+    U_right = similar(H[end], V_right', oneunit(V_right))
+    U_right[end] = fill!(U_right[end], one(scalartype(H)))
+    @plansor O[end][-1 -2; -3 -4] := O[end][-1 -2; -3 1] * U_right[1; -4]
+    
+    E = promote_type(scalartype(H), scalartype(A))
+
+    local Fᵣ # trick to make Fᵣ defined in the loop
+    for i in 1:length(mps)
+        Fₗ = i != 1 ? Fᵣ : fuser(E, left_virtualspace(A[i]), left_virtualspace(O[i]))
+        Fᵣ = fuser(E, right_virtualspace(A[i])', right_virtualspace(O[i])')
+        @plansor A[i][-1 -2; -3] := Fₗ[-1; 1 3] * A[i][1 2; 4] *
+                                    O[i][3 -2; 2 5] *
+                                    conj(Fᵣ[-3; 4 5])
+    end
+
+    # use changebonds to get rid of non-full-rank MPS
+    mps′ = FiniteMPS(A)
+    return changebonds!(mps′, SvdCut(); normalize=false)
 end
 
 Base.repeat(x::MPOHamiltonian, n::Int) = MPOHamiltonian(repeat(x.data, n))

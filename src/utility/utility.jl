@@ -158,6 +158,8 @@ function between(x1, x, x2)
     x > x2 && return x2
     return x
 end
+
+fuser(::Type{T}, V1::VectorSpace, V2::VectorSpace) where {T<:Number} = fuser(T, promote(V1, V2)...)
 function fuser(::Type{T}, V1::S, V2::S) where {T<:Number,S<:IndexSpace}
     return isomorphism(Matrix{T}, fuse(V1 ⊗ V2), V1 ⊗ V2)
 end
@@ -169,7 +171,7 @@ function fuser(::Type{T}, V1::SumSpace{S}, V2::SumSpace{S}) where {T<:Number,S<:
     for I in CartesianIndices(F)
         V = getsubspace(space(F), I)
         if I[1] == I[2] + (I[3] - 1) * size(F, 2)
-            F[I] = isomorphism(storagetype(F), V)
+            F[I] = isomorphism(Matrix{scalartype(F)}, V)
         end
     end
 
