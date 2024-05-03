@@ -203,7 +203,7 @@ function Base.:+(a::MPOHamiltonian{T}, b::MPOHamiltonian{T}) where {T}
         Vₗ₁ = left_virtualspace(h1)
         Vₗ₂ = left_virtualspace(h2)
         @assert Vₗ₁[1] == Vₗ₂[1] && Vₗ₁[end] == Vₗ₂[end] "trivial spaces should match"
-        Vₗ = Vₗ₁[1:(end - 1)] ⊕ Vₗ₂[2:end]
+        Vₗ = Vₗ₁[1] ⊕ Vₗ₁[2:(end - 1)] ⊕ Vₗ₂[2:(end - 1)] ⊕ Vₗ₂[end]
 
         Vᵣ₁ = right_virtualspace(h1)
         Vᵣ₂ = right_virtualspace(h2)
@@ -211,7 +211,6 @@ function Base.:+(a::MPOHamiltonian{T}, b::MPOHamiltonian{T}) where {T}
         Vᵣ = Vᵣ₁[1:(end - 1)] ⊕ Vᵣ₂[2:end]
 
         Wnew = T(undef, Vₗ ⊗ space(h1, 2), space(h1, 3)' ⊗ Vᵣ')
-
         # add blocks from first hamiltonian
         for (I, O) in nonzero_pairs(h1)
             if I[1] == 1
@@ -228,7 +227,7 @@ function Base.:+(a::MPOHamiltonian{T}, b::MPOHamiltonian{T}) where {T}
             elseif I[4] == size(h1, 4)
                 if I[1] == size(h1, 1)
                     # 1 block
-                    Wnew[I[1], 1, 1, end] = O
+                    Wnew[end, 1, 1, end] = O
                 else
                     # B block
                     Wnew[I[1], 1, 1, end] = O
@@ -238,7 +237,6 @@ function Base.:+(a::MPOHamiltonian{T}, b::MPOHamiltonian{T}) where {T}
                 Wnew[I] = O
             end
         end
-
         # add blocks from second hamiltonian
         for (I, O) in nonzero_pairs(h2)
             if I[1] == 1
