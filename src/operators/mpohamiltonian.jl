@@ -329,7 +329,7 @@ function Base.:(^)(a::MPOHamiltonian, n::Int)
     return Base.power_by_squaring(a, n)
 end
 
-function Base.:*(H::MPOHamiltonian, mps::FiniteMPS)
+function Base.:*(H::Union{MPOHamiltonian,SparseMPO}, mps::FiniteMPS)
     length(H) == length(mps) || throw(ArgumentError("dimension mismatch"))
 
     # extract mps tensors
