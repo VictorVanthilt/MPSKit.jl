@@ -9,6 +9,50 @@ include("setup.jl")
 pspaces = (ℂ^4, Rep[U₁](0 => 2), Rep[SU₂](1 => 1))
 vspaces = (ℂ^10, Rep[U₁]((0 => 20)), Rep[SU₂](1 // 2 => 10, 3 // 2 => 5, 5 // 2 => 1))
 
+@testset "Finite MPOHamiltonian" begin
+    # simple single-site operator
+    h1 = TensorMap(rand, ComplexF64, ℂ^2, ℂ^2)
+    h1 += h1'
+    normalize!(h1)
+    H1 = MPOHamiltonian(h1)
+
+    @test convert(TensorMap, H1) ≈ h1
+
+    α = randn(ComplexF64)
+    @test convert(TensorMap, H1 * α) ≈ h1 * α
+
+    @test convert(TensorMap, H1 + H1) ≈ h1 + h1
+    @test convert(TensorMap, H1 - H1) ≈ h1 - h1
+
+    @test convert(TensorMap, H1 + 1.4 * H1) ≈ 2.4 * h1
+
+    # single-site operator acting on 3 sites
+    E = id(Matrix{ComplexF64}, ℂ^2)
+    H3 = repeat(copy(H1), 3)
+    h3 = h1 ⊗ E ⊗ E + E ⊗ h1 ⊗ E + E ⊗ E ⊗ h1
+    @test convert(TensorMap, H3) ≈ h3
+
+    @test convert(TensorMap, H3 * α) ≈ h3 * α
+    @test convert(TensorMap, H3 + H3) ≈ h3 + h3
+    @test convert(TensorMap, H3 - H3) ≈ h3 - h3
+
+    # slightly more complicated 2-site operator
+    h2 = TensorMap(rand, ComplexF64, (ℂ^2)^2, (ℂ^2)^2)
+    h2 += h2'
+    normalize!(h2)
+
+    H2 = repeat(MPOHamiltonian(h2), 2)
+    @test convert(TensorMap, H2) ≈ h2
+
+    @test convert(TensorMap, H2 * α) ≈ h2 * α
+    @test convert(TensorMap, H2 + H2) ≈ h2 + h2
+    @test convert(TensorMap, H2 - H2) ≈ h2 - h2
+    @show H2
+    @show -H2
+    @show repeat(H1, 2)
+    @test convert(TensorMap, H2 + repeat(H1, 2)) ≈ h2 + h1 ⊗ E + E ⊗ h1
+end
+
 @testset "MPOHamiltonian $(sectortype(pspace))" for (pspace, Dspace) in
                                                     zip(pspaces, vspaces)
     #generate a 1-2-3 body interaction
