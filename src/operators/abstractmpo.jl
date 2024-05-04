@@ -149,12 +149,23 @@ function _deduce_spaces(data::AbstractArray{Union{T,E},3}) where {T<:MPOTensor,E
         end
     end
 
-    # check that all spaces are assigned
     for i in 1:L
-        ismissing(physicalspaces[i]) &&
-            throw(ArgumentError("Physical space at $i is not assigned"))
+        # ismissing(physicalspaces[i]) &&
+        #     throw(ArgumentError("Physical space at $i is not assigned"))
         replace!(virtualspaces[i], missing => oneunit(S)) # this should not cause problems?
     end
+    
+    # check that all physical spaces are assigned, if not, just find first not missing and assume it's everywhere else
+    if sum(ismissing.(physicalspaces)) != 0 # at least some of the pspaces were assigned
+        if allequal(Iterators.filter(!ismissing, physicalspaces))
+            V = physicalspaces[findfirst(!ismissing, physicalspaces)]
+            @warn "Not all physical spaces were assigned, assuming all are the same: $V"
+            physicalspaces .= Ref(V)
+        else
+            throw(ArgumentError("Not all physical spaces were assigned"))
+        end
+    end
+    
 
     return physicalspaces, virtualspaces
 end
