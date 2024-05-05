@@ -316,7 +316,7 @@ function Base.:*(b::H, a::H) where {H<:MPOHamiltonian}
                 if (haskey(a[i], Ia) && a[i][Ia] isa TensorKit.BraidingTensor) &&
                    (haskey(b[i], Ib) && b[i][Ib] isa TensorKit.BraidingTensor)
                     V = getsubspace(space(C[i]), CartesianIndex(j, 1, 1, k))
-                    C[i][j, 1, 1, k] = TensorKit.BraidingTensor{S,Matrix{E}}(V[2], V[1])
+                    C[i][j, 1, 1, k] = TensorKit.BraidingTensor{E,S}(V[2], V[1])
                 end
             end
         end
