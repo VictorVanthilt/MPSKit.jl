@@ -320,6 +320,12 @@ function Base.:*(b::H, a::H) where {H<:MPOHamiltonian}
                 end
             end
         end
+
+        for I in eachindex(C[i])
+            if norm(C[i][I]) < 1e-14
+                delete!(C[i], I)
+            end
+        end
     end
     return MPOHamiltonian(C)
 end
